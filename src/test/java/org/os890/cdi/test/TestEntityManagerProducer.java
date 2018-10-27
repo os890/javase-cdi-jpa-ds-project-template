@@ -23,6 +23,7 @@ import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.os890.cdi.template.EntityManagerProducer;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Specializes;
@@ -32,6 +33,7 @@ import javax.persistence.EntityManagerFactory;
 import static java.util.Collections.emptyMap;
 
 @Specializes
+@ApplicationScoped
 public class TestEntityManagerProducer extends EntityManagerProducer {
   private EntityManagerFactory entityManagerFactory;
 
