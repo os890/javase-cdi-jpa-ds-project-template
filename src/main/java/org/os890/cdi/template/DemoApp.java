@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.template;
 
 import org.apache.deltaspike.cdise.api.CdiContainer;
@@ -23,35 +24,49 @@ import org.apache.deltaspike.cdise.api.CdiContainerLoader;
 import org.apache.deltaspike.cdise.api.ContextControl;
 import org.apache.deltaspike.core.api.provider.BeanProvider;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
+
 import java.util.logging.Logger;
 
 import static java.lang.System.exit;
 
+/**
+ * Java SE entry point that boots the CDI container, persists a demo
+ * {@link ConfigEntry}, and prints all persisted values.
+ */
 public class DemoApp {
-  private static final Logger LOG = Logger.getLogger(DemoApp.class.getName());
 
-  @Inject
-  private ConfigRepository configRepository;
+    private static final Logger LOG = Logger.getLogger(DemoApp.class.getName());
 
-  public static void main(String[] args) {
-    CdiContainer container = CdiContainerLoader.getCdiContainer();
-    container.boot();
-    ContextControl contextControl = container.getContextControl();
-    contextControl.startContexts();
+    @Inject
+    private ConfigRepository configRepository;
 
-    try {
-      BeanProvider.injectFields(new DemoApp()).runApplicationLogic();
-    } finally {
-      contextControl.stopContexts();
-      container.shutdown();
+    /**
+     * Starts the CDI container, runs the demo logic, then shuts down.
+     *
+     * @param args command-line arguments (not used)
+     */
+    public static void main(String[] args) {
+        CdiContainer container = CdiContainerLoader.getCdiContainer();
+        container.boot();
+        ContextControl contextControl = container.getContextControl();
+        contextControl.startContexts();
+
+        try {
+            BeanProvider.injectFields(new DemoApp()).runApplicationLogic();
+        } finally {
+            contextControl.stopContexts();
+            container.shutdown();
+        }
+        exit(0); //triggers db-shutdown
     }
-    exit(0); //triggers db-shutdown
-  }
 
-  void runApplicationLogic() {
-    configRepository.save(new ConfigEntry("test", "demo"));
+    /**
+     * Saves a demo entry and logs all persisted config entries.
+     */
+    void runApplicationLogic() {
+        configRepository.save(new ConfigEntry("test", "demo"));
 
-    LOG.info("Persisted values: " + configRepository.findAll());
-  }
+        LOG.info("Persisted values: " + configRepository.findAll());
+    }
 }

@@ -16,35 +16,54 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.template;
 
 import org.apache.deltaspike.jpa.api.entitymanager.PersistenceUnitName;
 import org.apache.deltaspike.jpa.api.transaction.TransactionScoped;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
+/**
+ * CDI producer for transaction-scoped {@link EntityManager} instances.
+ *
+ * <p>Obtains an {@link EntityManagerFactory} for the {@code prodPU}
+ * persistence unit via DeltaSpike's {@link PersistenceUnitName} injection,
+ * then exposes one {@link EntityManager} per DeltaSpike transaction.</p>
+ */
 @ApplicationScoped
 public class EntityManagerProducer {
-  @Inject
-  @PersistenceUnitName("prodPU")
-  private EntityManagerFactory entityManagerFactory;
 
-  @Produces
-  @Default //needed for weld in wildfly8 - see WELD-1620
-  @TransactionScoped
-  protected EntityManager exposeEntityManager() {
-    return entityManagerFactory.createEntityManager();
-  }
+    @Inject
+    @PersistenceUnitName("prodPU")
+    private EntityManagerFactory entityManagerFactory;
 
-  protected void onTransactionEnd(@Disposes @Default /*needed for weld in wildfly8 - see WELD-1620*/ EntityManager entityManager) {
-    if (entityManager.isOpen()) {
-      entityManager.close();
+    /**
+     * Creates and returns an {@link EntityManager} for the current transaction.
+     *
+     * @return a new entity manager backed by the production persistence unit
+     */
+    @Produces
+    @Default //needed for weld in wildfly8 - see WELD-1620
+    @TransactionScoped
+    protected EntityManager exposeEntityManager() {
+        return entityManagerFactory.createEntityManager();
     }
-  }
+
+    /**
+     * Closes the entity manager when the transaction ends.
+     *
+     * @param entityManager the entity manager to close
+     */
+    protected void onTransactionEnd(@Disposes @Default /*needed for weld in wildfly8 - see WELD-1620*/ EntityManager entityManager) {
+        if (entityManager.isOpen()) {
+            entityManager.close();
+        }
+    }
 }

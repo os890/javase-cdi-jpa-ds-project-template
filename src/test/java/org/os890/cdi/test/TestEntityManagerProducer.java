@@ -16,43 +16,66 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.test;
 
 import org.apache.deltaspike.jpa.api.transaction.TransactionScoped;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.os890.cdi.template.EntityManagerProducer;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.Specializes;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 import static java.util.Collections.emptyMap;
 
+/**
+ * Test replacement for the production {@link EntityManagerProducer}.
+ *
+ * <p>Specializes {@link EntityManagerProducer} to use an in-memory
+ * HSQLDB database (configured via {@link TestPersistenceUnitInfo})
+ * instead of the production H2 datasource.</p>
+ */
 @Specializes
 @ApplicationScoped
 public class TestEntityManagerProducer extends EntityManagerProducer {
-  private EntityManagerFactory entityManagerFactory;
 
-  @PostConstruct
-  protected void init() {
-    entityManagerFactory = new HibernatePersistenceProvider().createContainerEntityManagerFactory(new TestPersistenceUnitInfo(), emptyMap());
-  }
+    private EntityManagerFactory entityManagerFactory;
 
-  @Produces
-  @TransactionScoped
-  @Override
-  protected EntityManager exposeEntityManager() {
-    return entityManagerFactory.createEntityManager();
-  }
-
-  @Override
-  protected void onTransactionEnd(@Disposes EntityManager entityManager) {
-    if (entityManager.isOpen()) {
-      entityManager.close();
+    /**
+     * Bootstraps the test {@link EntityManagerFactory} against HSQLDB.
+     */
+    @PostConstruct
+    protected void init() {
+        entityManagerFactory = new HibernatePersistenceProvider()
+                .createContainerEntityManagerFactory(new TestPersistenceUnitInfo(), emptyMap());
     }
-  }
+
+    /**
+     * Produces a transaction-scoped {@link EntityManager} for the test database.
+     *
+     * @return an entity manager backed by the HSQLDB in-memory test database
+     */
+    @Produces
+    @TransactionScoped
+    @Override
+    protected EntityManager exposeEntityManager() {
+        return entityManagerFactory.createEntityManager();
+    }
+
+    /**
+     * Closes the entity manager when the transaction ends.
+     *
+     * @param entityManager the entity manager to close
+     */
+    @Override
+    protected void onTransactionEnd(@Disposes EntityManager entityManager) {
+        if (entityManager.isOpen()) {
+            entityManager.close();
+        }
+    }
 }

@@ -16,30 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.test;
 
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.Test;
+import org.os890.cdi.addon.dynamictestbean.EnableTestBeans;
 import org.os890.cdi.template.ConfigEntry;
 import org.os890.cdi.template.ConfigRepository;
 
-import javax.inject.Inject;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+/**
+ * CDI integration test for {@link ConfigRepository}.
+ *
+ * <p>Boots a CDI SE container with full classpath scanning.
+ * {@link TestEntityManagerProducer} specializes the production
+ * {@link org.os890.cdi.template.EntityManagerProducer} to use an
+ * in-memory HSQLDB database for isolation.</p>
+ */
+@EnableTestBeans
+class SimpleTest {
 
-@RunWith(CdiTestRunner.class)
-public class SimpleTest {
-  @Inject
-  private ConfigRepository configRepository;
+    @Inject
+    private ConfigRepository configRepository;
 
-  @Test
-  public void configRepository() {
-    assertTrue(configRepository.findAll().isEmpty());
+    /**
+     * Verifies that {@link ConfigRepository} persists and retrieves entries.
+     */
+    @Test
+    void configRepository() {
+        assertTrue(configRepository.findAll().isEmpty());
 
-    configRepository.save(new ConfigEntry("test", "demo"));
+        configRepository.save(new ConfigEntry("test", "demo"));
 
-    assertFalse(configRepository.findAll().isEmpty());
-  }
+        assertFalse(configRepository.findAll().isEmpty());
+    }
 }

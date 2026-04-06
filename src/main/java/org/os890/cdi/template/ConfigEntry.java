@@ -16,64 +16,117 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.template;
 
-import javax.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
+
 import java.io.Serializable;
 import java.util.UUID;
 
+/**
+ * JPA entity representing a configuration key-value pair.
+ *
+ * <p>Uses optimistic locking via a {@link Version} field and a randomly
+ * generated UUID as the primary key.</p>
+ */
 @Entity
 public class ConfigEntry implements Serializable {
-  private static final long serialVersionUID = 2764878761692675990L;
 
-  @Id
-  protected String id;
+    @java.io.Serial
+    private static final long serialVersionUID = 2764878761692675990L;
 
-  @Version
-  protected Long version;
+    @Id
+    protected String id;
 
-  @Column(unique = true, nullable = false)
-  private String entryKey;
+    @Version
+    protected Long version;
 
-  @Column
-  private String value;
+    @Column(unique = true, nullable = false)
+    private String entryKey;
 
-  protected ConfigEntry() {
-  }
+    @Column
+    private String value;
 
-  public ConfigEntry(String entryKey, String value) {
-    this.id = UUID.randomUUID().toString().replace("-", "");
-    this.entryKey = entryKey;
-    this.value = value;
-  }
+    /**
+     * Default constructor required by JPA.
+     */
+    protected ConfigEntry() {
+    }
 
-  @Transient
-  public boolean isTransient() {
-    return version == null;
-  }
+    /**
+     * Creates a new config entry with the given key and value.
+     *
+     * @param entryKey the unique configuration key
+     * @param value    the configuration value
+     */
+    public ConfigEntry(String entryKey, String value) {
+        this.id = UUID.randomUUID().toString().replace("-", "");
+        this.entryKey = entryKey;
+        this.value = value;
+    }
 
-  /*
-   * generated
-   */
+    /**
+     * Returns {@code true} if this entity has never been persisted.
+     *
+     * @return {@code true} if transient (not yet saved)
+     */
+    @Transient
+    public boolean isTransient() {
+        return version == null;
+    }
 
-  public String getEntryKey() {
-    return entryKey;
-  }
+    /*
+     * generated
+     */
 
-  public void setEntryKey(String entryKey) {
-    this.entryKey = entryKey;
-  }
+    /**
+     * Returns the configuration key.
+     *
+     * @return the entry key
+     */
+    public String getEntryKey() {
+        return entryKey;
+    }
 
-  public String getValue() {
-    return value;
-  }
+    /**
+     * Sets the configuration key.
+     *
+     * @param entryKey the entry key to set
+     */
+    public void setEntryKey(String entryKey) {
+        this.entryKey = entryKey;
+    }
 
-  public void setValue(String value) {
-    this.value = value;
-  }
+    /**
+     * Returns the configuration value.
+     *
+     * @return the value
+     */
+    public String getValue() {
+        return value;
+    }
 
-  @Override
-  public String toString() {
-    return "ConfigEntry{ entryKey='" + entryKey + "\', value='" + value + "\'}";
-  }
+    /**
+     * Sets the configuration value.
+     *
+     * @param value the value to set
+     */
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    /**
+     * Returns a human-readable string representation of this config entry.
+     *
+     * @return a string containing the entry key and value
+     */
+    @Override
+    public String toString() {
+        return "ConfigEntry{ entryKey='" + entryKey + "\', value='" + value + "\'}";
+    }
 }

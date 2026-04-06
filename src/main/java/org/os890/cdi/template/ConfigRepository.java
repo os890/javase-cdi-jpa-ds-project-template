@@ -16,12 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.os890.cdi.template;
 
 import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 import org.apache.deltaspike.jpa.api.transaction.Transactional;
 
+/**
+ * DeltaSpike Data repository for {@link ConfigEntry} entities.
+ *
+ * <p>All operations are wrapped in a transaction via {@link Transactional}.
+ * The repository implementation is generated at runtime by DeltaSpike.</p>
+ */
 @Transactional
 @Repository
 public interface ConfigRepository extends EntityRepository<ConfigEntry, String> {
